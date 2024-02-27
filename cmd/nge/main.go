@@ -5,10 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	_ "github.com/gorilla/mux"
-	_ "github.com/lib/pq"
-
 	"github.com/gorilla/mux"
+	_ "github.com/lib/pq"
 )
 
 
@@ -17,8 +15,8 @@ func main() {
 
 	r.HandleFunc("/health", healthCheckHandler)
 
-	r.HandleFunc("/signup", healthCheckHandler)
-	r.HandleFunc("/signin", healthCheckHandler)
+	r.HandleFunc("/signup", signupHandler)
+	r.HandleFunc("/signin", signinHandler)
 
 	r.HandleFunc("/students", getAllUsersHandler)
 	// r.HandleFunc("/student/{id}", getUserByIDHandler)
