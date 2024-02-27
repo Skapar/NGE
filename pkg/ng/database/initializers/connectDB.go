@@ -21,3 +21,7 @@ func ConnectDB(config *Config) {
 	fmt.Println("? Connected Successfully to the Database")
 }
 
+func GetDB() *gorm.DB{
+	return DB
+}
+
