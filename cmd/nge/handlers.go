@@ -6,7 +6,6 @@ import (
 
 	NGE "github.com/Skapar/NGE/pkg/nge"
 	User "github.com/Skapar/NGE/pkg/nge/User"
-	"github.com/gorilla/mux"
 )
 type HealthCheckResponse struct {
 	Status string `json:"status"`
@@ -39,15 +38,15 @@ func getAllUsersHandler(w http.ResponseWriter, r *http.Request) {
 	writeJSONResponse(w, http.StatusOK, allStudents)
 }
 
-func getUserByIDHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	studentID := vars["id"]
+// func getUserByIDHandler(w http.ResponseWriter, r *http.Request) {
+// 	vars := mux.Vars(r)
+// 	studentID := vars["id"]
 
-	student, err := User.GetUserByID(studentID)
-	if err != nil {
-		writeJSONResponse(w, http.StatusNotFound, ErrorResponse{"User not found"})
-		return
-	}
+// 	student, err := User.GetUserByID(studentID)
+// 	if err != nil {
+// 		writeJSONResponse(w, http.StatusNotFound, ErrorResponse{"User not found"})
+// 		return
+// 	}
 
-	writeJSONResponse(w, http.StatusOK, student)
-}
+// 	writeJSONResponse(w, http.StatusOK, student)
+// }

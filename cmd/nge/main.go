@@ -18,7 +18,7 @@ func main() {
 	r.HandleFunc("/health", healthCheckHandler)
 
 	r.HandleFunc("/students", getAllUsersHandler)
-	r.HandleFunc("/student/{id}", getUserByIDHandler)
+	// r.HandleFunc("/student/{id}", getUserByIDHandler)
 
 	fmt.Println("Server listening on port 8080")
 
