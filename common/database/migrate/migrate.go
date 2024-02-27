@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/Skapar/NGE/database/initializers"
-	"github.com/Skapar/NGE/gorm/models"
+	"github.com/Skapar/NGE/common/database/initializers"
+	"github.com/Skapar/NGE/models"
 )
 
 func init() {
