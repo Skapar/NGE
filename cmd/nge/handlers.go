@@ -3,27 +3,43 @@ package main
 import (
 	"encoding/json"
 	"net/http"
-
 	"strconv"
+	"time"
 
 	"github.com/gorilla/mux"
 	"gorm.io/gorm"
 
 	NGE "github.com/Skapar/NGE/pkg/nge"
 	"github.com/Skapar/NGE/pkg/nge/models"
-	// Auth "github.com/Skapar/NGE/pkg/nge/Auth"
 )
 
-var db *gorm.DB
+// HealthCheckResponse represents the response for health check endpoint
 type HealthCheckResponse struct {
 	Status string `json:"status"`
-	Check   string `json:"Check"`
+	Check  string `json:"Check"`
 }
 
+// ErrorResponse represents the response for error scenarios
 type ErrorResponse struct {
 	Error string `json:"error"`
 }
 
+// CustomDB embeds *gorm.DB to allow defining methods on it
+type CustomDB struct {
+	*gorm.DB
+}
+
+type EventRequest struct {
+	Date        time.Time `json:"date"`
+	Description string    `json:"description"`
+}
+
+// HealthCheckHandler handles health check requests
+func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
+	writeJSONResponse(w, http.StatusOK, HealthCheckResponse{"ok", NGE.HealthCheck()})
+}
+
+// writeJSONResponse writes JSON response to the http.ResponseWriter
 func writeJSONResponse(w http.ResponseWriter, code int, payload interface{}) {
 	response, err := json.Marshal(payload)
 	if err != nil {
@@ -37,47 +53,10 @@ func writeJSONResponse(w http.ResponseWriter, code int, payload interface{}) {
 	w.Write(response)
 }
 
-func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
-	writeJSONResponse(w, http.StatusOK, HealthCheckResponse{"ok", NGE.HealthCheck()})
-}
-
-// func getAllUsersHandler(w http.ResponseWriter, r *http.Request) {
-// 	allStudents := User.GetAllUsers()
-// 	writeJSONResponse(w, http.StatusOK, allStudents)
-// }
-
-// func signupHandler(w http.ResponseWriter, r *http.Request) {
-// 	// Call the Signup function from the User package, passing the database connection
-// 	// along with the response writer and request. Since you haven't provided the database
-// 	// connection in this file, I'm assuming you have it set up elsewhere and you'll pass it here.
-// 	Auth.Signup(db, w, r)
-// }
-
-// func signinHandler(w http.ResponseWriter, r *http.Request) {
-// 	// Similarly, call the Signin function from the User package.
-// 	Auth.Signin(db, w, r)
-// }
-
-
-// func getUserByIDHandler(w http.ResponseWriter, r *http.Request) {
-// 	vars := mux.Vars(r)
-// 	studentID := vars["id"]
-
-// 	student, err := User.GetUserByID(studentID)
-// 	if err != nil {
-// 		writeJSONResponse(w, http.StatusNotFound, ErrorResponse{"User not found"})
-// 		return
-// 	}
-
-// 	writeJSONResponse(w, http.StatusOK, student)
-// }
-
-
-
-func GetUser(w http.ResponseWriter, r *http.Request) {
-	// Extracting the user ID from the URL parameter
+func (db *CustomDB) GetUserHandler(w http.ResponseWriter, r *http.Request) {
+	// Extract user ID from the URL parameter
 	vars := mux.Vars(r)
-	idStr := vars["id"] // Ensure your route variable is named 'id'
+	idStr := vars["id"]            // Ensure your route variable is named 'id'
 	id, err := strconv.Atoi(idStr) // Converts the ID from string to int
 	if err != nil {
 		// If there's an error in conversion, return a bad request response
@@ -86,7 +65,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Fetch the user by ID using the GetUserByID function
-	user, err := models.GetUserByID(db, uint(id))
+	user, err := models.GetUserByID(db.DB, uint(id))
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			// If no user is found, return a not found response
@@ -103,4 +82,25 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(user); err != nil {
 		http.Error(w, "Error encoding response", http.StatusInternalServerError)
 	}
+}
+
+func (app *App) AddEventHandler(w http.ResponseWriter, r *http.Request) {
+	var req EventRequest
+
+	// Decode the request body
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Assuming a function in the models package that adds an event
+	err = models.AddEvent(app.DB, req.Date, req.Description)
+	if err != nil {
+		http.Error(w, "Failed to add event", http.StatusInternalServerError)
+		return
+	}
+
+	// Respond to the client
+	writeJSONResponse(w, http.StatusCreated, map[string]string{"result": "Event added successfully"})
 }

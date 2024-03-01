@@ -8,18 +8,31 @@ import (
 	config "github.com/Skapar/NGE/pkg/nge/config"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
+	"gorm.io/gorm"
 )
 
+type App struct {
+	DB *gorm.DB
+}
 
 func main() {
-	config.Connect()
+	db, err := config.Connect()
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+	config.Migrate()
+	app := App{DB: db}
 	r := mux.NewRouter()
 
 	r.HandleFunc("/health", healthCheckHandler)
 
-	r.HandleFunc("/GetUserById", GetUser )
+	//r.HandleFunc("/GetUserById/{id}", app.GetUserHandler)
 
+	r.HandleFunc("/events", app.AddEventHandler).Methods("POST")
 
+	//r.HandleFunc("/createUser", app.createUserHandler).Methods("POST")
+
+	// r.HandleFunc("/CreateEvent", app.createEventHandler).Methods("POST")
 
 	// r.HandleFunc("/signup", signupHandler)
 	// r.HandleFunc("/signin", signinHandler)
