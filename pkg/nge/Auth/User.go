@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/Skapar/NGE/pkg/ng/models"
+	"github.com/Skapar/NGE/pkg/nge/models"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
