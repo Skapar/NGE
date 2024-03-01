@@ -4,7 +4,6 @@ import (
 	"log"
 
 	initializers "github.com/Skapar/NGE/pkg/nge/database/initializers"
-	// "github.com/Skapar/NGE/pkg/nge/models"
 )
 
 func Connect() {
