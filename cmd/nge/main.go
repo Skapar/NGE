@@ -17,6 +17,10 @@ func main() {
 
 	r.HandleFunc("/health", healthCheckHandler)
 
+	r.HandleFunc("/GetUserById", GetUser )
+
+
+
 	// r.HandleFunc("/signup", signupHandler)
 	// r.HandleFunc("/signin", signinHandler)
 
