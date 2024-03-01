@@ -8,7 +8,7 @@ import (
 )
 
 func Connect() {
-	config, err := initializers.LoadConfig("/Users/dauren/Desktop/gofinal/EntrepreNet/app.env")
+	config, err := initializers.LoadConfig(".")
 	if err != nil {
 		log.Fatal("? Could not load environment variables", err)
 	}
