@@ -1,8 +1,8 @@
 package user
 
 import (
-	"github.com/Skapar/NGE/common/database/initializers"
-	"github.com/Skapar/NGE/models"
+	"github.com/Skapar/NGE/pkg/nge/database/initializers"
+	"github.com/Skapar/NGE/pkg/nge/models"
 
 	"gorm.io/gorm"
 )
