@@ -15,9 +15,12 @@ import (
 )
 
 var db *gorm.DB
+
+var dbModel *models.DBModel
+
 type HealthCheckResponse struct {
 	Status string `json:"status"`
-	Check   string `json:"Check"`
+	Check  string `json:"Check"`
 }
 
 type ErrorResponse struct {
@@ -58,7 +61,6 @@ func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
 // 	Auth.Signin(db, w, r)
 // }
 
-
 // func getUserByIDHandler(w http.ResponseWriter, r *http.Request) {
 // 	vars := mux.Vars(r)
 // 	studentID := vars["id"]
@@ -72,12 +74,10 @@ func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
 // 	writeJSONResponse(w, http.StatusOK, student)
 // }
 
-
-
 func GetUser(w http.ResponseWriter, r *http.Request) {
 	// Extracting the user ID from the URL parameter
 	vars := mux.Vars(r)
-	idStr := vars["id"] // Ensure your route variable is named 'id'
+	idStr := vars["id"]            // Ensure your route variable is named 'id'
 	id, err := strconv.Atoi(idStr) // Converts the ID from string to int
 	if err != nil {
 		// If there's an error in conversion, return a bad request response
@@ -103,4 +103,81 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(user); err != nil {
 		http.Error(w, "Error encoding response", http.StatusInternalServerError)
 	}
+}
+
+func (app *App) add(w http.ResponseWriter, r *http.Request) {
+	var newPost models.Post
+	if err := json.NewDecoder(r.Body).Decode(&newPost); err != nil {
+		writeJSONResponse(w, http.StatusBadRequest, ErrorResponse{err.Error()})
+		return
+	}
+
+	createdPost, err := dbModel.AddPost(newPost)
+	if err != nil {
+		writeJSONResponse(w, http.StatusInternalServerError, ErrorResponse{err.Error()})
+		return
+	}
+
+	writeJSONResponse(w, http.StatusOK, createdPost)
+}
+
+func (app *App) update(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	postIDStr := vars["id"]
+	postID, err := strconv.ParseUint(postIDStr, 10, 64)
+	if err != nil {
+		writeJSONResponse(w, http.StatusBadRequest, ErrorResponse{"Invalid post ID"})
+		return
+	}
+
+	var updatedPost models.Post
+	if err := json.NewDecoder(r.Body).Decode(&updatedPost); err != nil {
+		writeJSONResponse(w, http.StatusBadRequest, ErrorResponse{err.Error()})
+		return
+	}
+
+	updatedPost.ID = uint(postID)
+	updatedPost, err = dbModel.UpdatePost(updatedPost)
+	if err != nil {
+		writeJSONResponse(w, http.StatusInternalServerError, ErrorResponse{err.Error()})
+		return
+	}
+
+	writeJSONResponse(w, http.StatusOK, updatedPost)
+}
+
+func (app *App) delete(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	postIDStr := vars["id"]
+	postID, err := strconv.ParseUint(postIDStr, 10, 64)
+	if err != nil {
+		writeJSONResponse(w, http.StatusBadRequest, ErrorResponse{"Invalid post ID"})
+		return
+	}
+
+	err = dbModel.DeletePost(uint(postID))
+	if err != nil {
+		writeJSONResponse(w, http.StatusInternalServerError, ErrorResponse{err.Error()})
+		return
+	}
+
+	writeJSONResponse(w, http.StatusOK, map[string]string{"message": "Post deleted successfully"})
+}
+
+func (app *App) get(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	postIDStr := vars["id"]
+	postID, err := strconv.ParseUint(postIDStr, 10, 64)
+	if err != nil {
+		writeJSONResponse(w, http.StatusBadRequest, ErrorResponse{"Invalid post ID"})
+		return
+	}
+
+	post, err := dbModel.GetPost(uint(postID))
+	if err != nil {
+		writeJSONResponse(w, http.StatusInternalServerError, ErrorResponse{err.Error()})
+		return
+	}
+
+	writeJSONResponse(w, http.StatusOK, post)
 }
