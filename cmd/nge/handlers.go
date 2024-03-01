@@ -4,11 +4,14 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"strconv"
+
+	"github.com/gorilla/mux"
 	"gorm.io/gorm"
 
 	NGE "github.com/Skapar/NGE/pkg/nge"
+	"github.com/Skapar/NGE/pkg/nge/models"
 	// Auth "github.com/Skapar/NGE/pkg/nge/Auth"
-	// User "github.com/Skapar/NGE/pkg/nge/User"
 )
 
 var db *gorm.DB
@@ -68,3 +71,36 @@ func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
 
 // 	writeJSONResponse(w, http.StatusOK, student)
 // }
+
+
+
+func GetUser(w http.ResponseWriter, r *http.Request) {
+	// Extracting the user ID from the URL parameter
+	vars := mux.Vars(r)
+	idStr := vars["id"] // Ensure your route variable is named 'id'
+	id, err := strconv.Atoi(idStr) // Converts the ID from string to int
+	if err != nil {
+		// If there's an error in conversion, return a bad request response
+		http.Error(w, "Invalid user ID", http.StatusBadRequest)
+		return
+	}
+
+	// Fetch the user by ID using the GetUserByID function
+	user, err := models.GetUserByID(db, uint(id))
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			// If no user is found, return a not found response
+			http.Error(w, "User not found", http.StatusNotFound)
+		} else {
+			// For any other errors, return an internal server error response
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	// If the user is found, encode and return the user as JSON
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(user); err != nil {
+		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+	}
+}
