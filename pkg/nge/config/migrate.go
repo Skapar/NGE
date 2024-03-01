@@ -5,7 +5,6 @@ import (
 	"log"
 
 	initializers "github.com/Skapar/NGE/pkg/nge/database/initializers"
-	"github.com/Skapar/NGE/pkg/nge/models"
 	"gorm.io/gorm"
 )
 
@@ -30,6 +29,6 @@ func Connect() (*gorm.DB, error) {
 }
 
 func Migrate() {
-	initializers.DB.AutoMigrate(&models.Event{})
-	fmt.Println("? Migration complete")
+	// initializers.DB.AutoMigrate(&models.Event{})
+	// fmt.Println("? Migration complete")
 }

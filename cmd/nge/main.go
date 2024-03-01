@@ -29,6 +29,9 @@ func main() {
 	//r.HandleFunc("/GetUserById/{id}", app.GetUserHandler)
 
 	r.HandleFunc("/events", app.AddEventHandler).Methods("POST")
+	r.HandleFunc("/events/{id}", app.GetEventHandler).Methods("GET")
+	r.HandleFunc("/events/{id}", app.DeleteEventHandler).Methods("DELETE")
+	r.HandleFunc("/events/{id}", app.UpdateEventHandler).Methods("PUT")
 
 	//r.HandleFunc("/createUser", app.createUserHandler).Methods("POST")
 

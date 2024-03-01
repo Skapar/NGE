@@ -104,3 +104,58 @@ func (app *App) AddEventHandler(w http.ResponseWriter, r *http.Request) {
 	// Respond to the client
 	writeJSONResponse(w, http.StatusCreated, map[string]string{"result": "Event added successfully"})
 }
+
+func (app *App) DeleteEventHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	if err := models.DeleteEvent(app.DB, uint(id)); err != nil {
+		http.Error(w, "Event not found", http.StatusNotFound)
+		return
+	}
+
+	writeJSONResponse(w, http.StatusOK, map[string]string{"result": "Event deleted successfully"})
+}
+
+func (app *App) UpdateEventHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	var req EventRequest // Use the EventRequest struct for decoding request body
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if err := models.UpdateEvent(app.DB, uint(id), req.Date, req.Description); err != nil {
+		http.Error(w, "Failed to update event", http.StatusInternalServerError)
+		return
+	}
+
+	writeJSONResponse(w, http.StatusOK, map[string]string{"result": "Event updated successfully"})
+}
+
+func (app *App) GetEventHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	event, err := models.GetEventByID(app.DB, uint(id))
+	if err != nil {
+		http.Error(w, "Event not found", http.StatusNotFound)
+		return
+	}
+
+	writeJSONResponse(w, http.StatusOK, event)
+}
