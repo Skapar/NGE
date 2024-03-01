@@ -6,9 +6,9 @@ import (
 
 	"gorm.io/gorm"
 
-	NGE "github.com/Skapar/NGE/pkg/ng"
-	Auth "github.com/Skapar/NGE/pkg/ng/Auth"
-	User "github.com/Skapar/NGE/pkg/ng/User"
+	NGE "github.com/Skapar/NGE/pkg/nge"
+	Auth "github.com/Skapar/NGE/pkg/nge/Auth"
+	User "github.com/Skapar/NGE/pkg/nge/User"
 )
 
 var db *gorm.DB
