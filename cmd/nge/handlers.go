@@ -9,12 +9,15 @@ import (
 	NGE "github.com/Skapar/NGE/pkg/nge"
 	// Auth "github.com/Skapar/NGE/pkg/nge/Auth"
 	// User "github.com/Skapar/NGE/pkg/nge/User"
+
+	models "github.com/Skapar/NGE/pkg/nge/models"
 )
 
 var db *gorm.DB
+
 type HealthCheckResponse struct {
 	Status string `json:"status"`
-	Check   string `json:"Check"`
+	Check  string `json:"Check"`
 }
 
 type ErrorResponse struct {
@@ -55,7 +58,6 @@ func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
 // 	Auth.Signin(db, w, r)
 // }
 
-
 // func getUserByIDHandler(w http.ResponseWriter, r *http.Request) {
 // 	vars := mux.Vars(r)
 // 	studentID := vars["id"]
@@ -68,3 +70,11 @@ func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
 
 // 	writeJSONResponse(w, http.StatusOK, student)
 // }
+
+func getevent(w http.ResponseWriter, r *http.Request) {
+	// Assuming `calendar` is your Calendar instance
+	events := models.GetEvents()
+
+	// Convert the events slice to JSON and send it as a response
+	writeJSONResponse(w, http.StatusOK, events)
+}

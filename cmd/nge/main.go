@@ -10,12 +10,13 @@ import (
 	_ "github.com/lib/pq"
 )
 
-
 func main() {
 	config.Connect()
 	r := mux.NewRouter()
 
 	r.HandleFunc("/health", healthCheckHandler)
+
+	r.HandleFunc("/getevent", getevent)
 
 	// r.HandleFunc("/signup", signupHandler)
 	// r.HandleFunc("/signin", signinHandler)
