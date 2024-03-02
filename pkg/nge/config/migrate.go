@@ -5,7 +5,6 @@ import (
 	"log"
 
 	initializers "github.com/Skapar/NGE/pkg/nge/database/initializers"
-	"github.com/Skapar/NGE/pkg/nge/models"
 
 	"gorm.io/gorm"
 )
@@ -34,7 +33,7 @@ func Migrate() {
 	initializers.DB.AutoMigrate(
 		// &models.Event{},
 		// &models.User{},
-		&models.Post{},
+		// &models.Post{},
 	)
 	fmt.Println("? Migration complete")
 }
