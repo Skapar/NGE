@@ -136,13 +136,13 @@ func (app *App) add(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	createdPost, err := models.AddPost(app.DB, newPost) // pass app.DB to the function
+	createdPost, err := models.AddPost(app.DB, newPost) 
 	if err != nil {
 		writeJSONResponse(w, http.StatusInternalServerError, ErrorResponse{err.Error()})
 		return
 	}
 
-	writeJSONResponse(w, http.StatusCreated, createdPost) // Use http.StatusCreated for successful creation
+	writeJSONResponse(w, http.StatusCreated, createdPost) 
 }
 
 func (app *App) update(w http.ResponseWriter, r *http.Request) {
@@ -160,7 +160,7 @@ func (app *App) update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	updatedPost.ID = uint(postID)
-	updatedPost, err = models.UpdatePost(app.DB, updatedPost) // pass app.DB to the function
+	updatedPost, err = models.UpdatePost(app.DB, updatedPost) 
 	if err != nil {
 		writeJSONResponse(w, http.StatusInternalServerError, ErrorResponse{err.Error()})
 		return
@@ -194,7 +194,7 @@ func (app *App) get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	post, err := models.GetPost(app.DB, uint(postID)) // pass app.DB to the function
+	post, err := models.GetPost(app.DB, uint(postID))
 	if err != nil {
 		writeJSONResponse(w, http.StatusInternalServerError, ErrorResponse{err.Error()})
 		return
