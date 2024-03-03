@@ -16,7 +16,7 @@ import (
 
 type HealthCheckResponse struct {
 	Status string `json:"status"`
-	Check   string `json:"Check"`
+	Check  string `json:"Check"`
 }
 
 type ErrorResponse struct {
@@ -123,29 +123,28 @@ func (app *App) GetEventHandler(w http.ResponseWriter, r *http.Request) {
 
 	writeJSONResponse(w, http.StatusOK, event)
 }
+
 // _________________________________________________________
-
-
 
 // POSTS HANDLER
 
-func (app *App) add(w http.ResponseWriter, r *http.Request) {
+func (app *App) addPost(w http.ResponseWriter, r *http.Request) {
 	var newPost models.Post
 	if err := json.NewDecoder(r.Body).Decode(&newPost); err != nil {
 		writeJSONResponse(w, http.StatusBadRequest, ErrorResponse{err.Error()})
 		return
 	}
 
-	createdPost, err := models.AddPost(app.DB, newPost) 
+	createdPost, err := models.AddPost(app.DB, newPost)
 	if err != nil {
 		writeJSONResponse(w, http.StatusInternalServerError, ErrorResponse{err.Error()})
 		return
 	}
 
-	writeJSONResponse(w, http.StatusCreated, createdPost) 
+	writeJSONResponse(w, http.StatusCreated, createdPost)
 }
 
-func (app *App) update(w http.ResponseWriter, r *http.Request) {
+func (app *App) updatePostById(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	postID, err := strconv.ParseUint(vars["id"], 10, 64)
 	if err != nil {
@@ -160,7 +159,7 @@ func (app *App) update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	updatedPost.ID = uint(postID)
-	updatedPost, err = models.UpdatePost(app.DB, updatedPost) 
+	updatedPost, err = models.UpdatePost(app.DB, updatedPost)
 	if err != nil {
 		writeJSONResponse(w, http.StatusInternalServerError, ErrorResponse{err.Error()})
 		return
@@ -169,7 +168,7 @@ func (app *App) update(w http.ResponseWriter, r *http.Request) {
 	writeJSONResponse(w, http.StatusOK, updatedPost)
 }
 
-func (app *App) delete(w http.ResponseWriter, r *http.Request) {
+func (app *App) deletePostById(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	postID, err := strconv.ParseUint(vars["id"], 10, 64)
 	if err != nil {
@@ -186,7 +185,7 @@ func (app *App) delete(w http.ResponseWriter, r *http.Request) {
 	writeJSONResponse(w, http.StatusOK, map[string]string{"message": "Post deleted successfully"})
 }
 
-func (app *App) get(w http.ResponseWriter, r *http.Request) {
+func (app *App) getPostById(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	postID, err := strconv.ParseUint(vars["id"], 10, 64)
 	if err != nil {
@@ -201,6 +200,16 @@ func (app *App) get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSONResponse(w, http.StatusOK, post)
+}
+
+func (app *App) getAllPosts(w http.ResponseWriter, r *http.Request) {
+	posts, err := models.GetAllPosts(app.DB)
+	if err != nil {
+		writeJSONResponse(w, http.StatusInternalServerError, ErrorResponse{err.Error()})
+		return
+	}
+
+	writeJSONResponse(w, http.StatusOK, posts)
 }
 
 // _____________________________________________________________

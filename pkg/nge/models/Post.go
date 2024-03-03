@@ -30,3 +30,9 @@ func DeletePost(db *gorm.DB, id uint) error {
 	err := db.Delete(&Post{}, id).Error
 	return err
 }
+
+func GetAllPosts(db *gorm.DB) ([]Post, error) {
+	var posts []Post
+	err := db.Find(&posts).Error
+	return posts, err
+}
