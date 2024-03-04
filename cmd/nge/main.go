@@ -37,6 +37,12 @@ func main() {
 	r.HandleFunc("/updatePost/{id}", app.update).Methods("PUT")
 	r.HandleFunc("/deletePost/{id}", app.delete).Methods("DELETE")
 
+	r.HandleFunc("/user", app.CreateUserHandler).Methods("POST")
+	r.HandleFunc("/user/{id}", app.GetUserHandler).Methods("GET")
+	r.HandleFunc("/user/{id}", app.UpdateUserHandler).Methods("PUT")
+	r.HandleFunc("/user/{id}", app.DeleteUserHandler).Methods("DELETE")
+
+
 
 	fmt.Println("Server listening on port 8080")
 

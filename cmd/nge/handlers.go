@@ -136,7 +136,7 @@ func (app *App) add(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	createdPost, err := models.AddPost(app.DB, newPost) 
+	createdPost, err := models.AddPost(app.DB, newPost)
 	if err != nil {
 		writeJSONResponse(w, http.StatusInternalServerError, ErrorResponse{err.Error()})
 		return
@@ -202,5 +202,86 @@ func (app *App) get(w http.ResponseWriter, r *http.Request) {
 
 	writeJSONResponse(w, http.StatusOK, post)
 }
+
+// _____________________________________________________________
+
+
+
+// User's handler 
+
+func (app *App) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
+	var newUser models.User
+	if err := json.NewDecoder(r.Body).Decode(&newUser); err != nil {
+		writeJSONResponse(w, http.StatusBadRequest, ErrorResponse{err.Error()})
+		return
+	}
+
+	createdUser, err := models.CreateUser(app.DB, newUser)
+	if err != nil {
+		writeJSONResponse(w, http.StatusInternalServerError, ErrorResponse{err.Error()})
+		return
+	}
+
+	writeJSONResponse(w, http.StatusCreated, createdUser)
+}
+
+func (app *App) UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	userID, err := strconv.ParseUint(vars["id"], 10, 64)
+	if err != nil {
+		writeJSONResponse(w, http.StatusBadRequest, ErrorResponse{"Invalid user ID"})
+		return
+	}
+
+	var updatedUser models.User
+	if err := json.NewDecoder(r.Body).Decode(&updatedUser); err != nil {
+		writeJSONResponse(w, http.StatusBadRequest, ErrorResponse{err.Error()})
+		return
+	}
+
+	updatedUser.ID = uint(userID)
+	updatedUser, err = models.UpdateUser(app.DB, updatedUser)
+	if err != nil {
+		writeJSONResponse(w, http.StatusInternalServerError, ErrorResponse{err.Error()})
+		return
+	}
+
+	writeJSONResponse(w, http.StatusOK, updatedUser)
+}
+
+func (app *App) DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	userID, err := strconv.ParseUint(vars["id"], 10, 64)
+	if err != nil {
+		writeJSONResponse(w, http.StatusBadRequest, ErrorResponse{"Invalid user ID"})
+		return
+	}
+
+	err = models.DeleteUser(app.DB, uint(userID))
+	if err != nil {
+		writeJSONResponse(w, http.StatusInternalServerError, ErrorResponse{err.Error()})
+		return
+	}
+
+	writeJSONResponse(w, http.StatusOK, map[string]string{"message": "User deleted successfully"})
+}
+
+func (app *App) GetUserHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	userID, err := strconv.ParseUint(vars["id"], 10, 64)
+	if err != nil {
+		writeJSONResponse(w, http.StatusBadRequest, ErrorResponse{"Invalid user ID"})
+		return
+	}
+
+	user, err := models.GetUserByID(app.DB, uint(userID))
+	if err != nil {
+		writeJSONResponse(w, http.StatusInternalServerError, ErrorResponse{err.Error()})
+		return
+	}
+
+	writeJSONResponse(w, http.StatusOK, user)
+}
+
 
 // _____________________________________________________________

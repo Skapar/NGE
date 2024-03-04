@@ -3,12 +3,14 @@
     // Наведите указатель мыши, чтобы просмотреть описания существующих атрибутов.
     // Для получения дополнительной информации посетите: https://go.microsoft.com/fwlink/?linkid=830387
     "configurations": [
+
         {
             "name": "Launch Package",
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/cmd/nge"
+            "program": "${workspaceFolder}",
+            "args": ["go build -o myprogram ./cmd/nge", "./myprogram"]
         }
     ]
 }
