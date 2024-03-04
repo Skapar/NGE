@@ -4,7 +4,7 @@
 
 NGE is a platform designed for budding entrepreneurs to connect, share ideas, and grow their businesses.
 
-![Alt text](image.png)
+![Alt text](image-1.png)
 
 ## API Endpoints
 
