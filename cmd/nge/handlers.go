@@ -213,3 +213,180 @@ func (app *App) getAllPosts(w http.ResponseWriter, r *http.Request) {
 }
 
 // _____________________________________________________________
+// PROFILE HANDLER
+func (app *App) AddProfile(w http.ResponseWriter, r *http.Request) {
+	var profile models.Profile
+	if err := json.NewDecoder(r.Body).Decode(&profile); err != nil {
+		writeJSONResponse(w, http.StatusBadRequest, ErrorResponse{err.Error()})
+		return
+	}
+
+	if err := models.AddProfile(app.DB, &profile); err != nil {
+		writeJSONResponse(w, http.StatusInternalServerError, ErrorResponse{err.Error()})
+		return
+	}
+
+	writeJSONResponse(w, http.StatusCreated, profile)
+}
+
+func (app *App) getProfileById(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	idStr := vars["id"]
+
+	id, err := strconv.ParseUint(idStr, 10, 64)
+	if err != nil {
+		writeJSONResponse(w, http.StatusBadRequest, ErrorResponse{"Invalid profile ID"})
+		return
+	}
+
+	profile, err := models.GetProfileById(app.DB, uint(id))
+	if err != nil {
+		writeJSONResponse(w, http.StatusInternalServerError, ErrorResponse{err.Error()})
+		return
+	}
+
+	writeJSONResponse(w, http.StatusOK, profile)
+}
+
+func (app *App) updateProfileById(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	profileID, err := strconv.ParseUint(vars["id"], 10, 64)
+	if err != nil {
+		writeJSONResponse(w, http.StatusBadRequest, ErrorResponse{"Invalid profile ID"})
+		return
+	}
+
+	var updatedProfile models.Profile
+	if err := json.NewDecoder(r.Body).Decode(&updatedProfile); err != nil {
+		writeJSONResponse(w, http.StatusBadRequest, ErrorResponse{err.Error()})
+		return
+	}
+
+	if err := models.UpdateProfileById(app.DB, uint(profileID), &updatedProfile); err != nil {
+		writeJSONResponse(w, http.StatusInternalServerError, ErrorResponse{err.Error()})
+		return
+	}
+
+	writeJSONResponse(w, http.StatusOK, updatedProfile)
+}
+
+func (app *App) deleteProfileById(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	profileID, err := strconv.ParseUint(vars["id"], 10, 64)
+	if err != nil {
+		writeJSONResponse(w, http.StatusBadRequest, ErrorResponse{"Invalid profile ID"})
+		return
+	}
+
+	if err := models.DeleteProfileById(app.DB, uint(profileID)); err != nil {
+		writeJSONResponse(w, http.StatusInternalServerError, ErrorResponse{err.Error()})
+		return
+	}
+
+	writeJSONResponse(w, http.StatusOK, map[string]string{"message": "Profile deleted successfully"})
+}
+
+func (app *App) getSubscriberById(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	subscriberID := vars["id"]
+
+	id, err := strconv.ParseUint(subscriberID, 10, 64)
+	if err != nil {
+		writeJSONResponse(w, http.StatusBadRequest, ErrorResponse{"Invalid subscriber ID"})
+		return
+	}
+
+	subscriber, err := models.GetSubcriberById(app.DB, uint(id))
+	if err != nil {
+		writeJSONResponse(w, http.StatusInternalServerError, ErrorResponse{err.Error()})
+		return
+	}
+
+	writeJSONResponse(w, http.StatusOK, subscriber)
+}
+
+func (app *App) getFollowersById(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	userID := vars["id"]
+
+	id, err := strconv.ParseUint(userID, 10, 64)
+	if err != nil {
+		writeJSONResponse(w, http.StatusBadRequest, ErrorResponse{"Invalid user ID"})
+		return
+	}
+
+	followers, err := models.GetFollowersById(app.DB, uint(id))
+	if err != nil {
+		writeJSONResponse(w, http.StatusInternalServerError, ErrorResponse{err.Error()})
+		return
+	}
+
+	writeJSONResponse(w, http.StatusOK, followers)
+}
+
+func (app *App) deleteFollowersById(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	userID := vars["id"]
+	followerID := vars["follower_id"]
+
+	id, err := strconv.ParseUint(userID, 10, 64)
+	if err != nil {
+		writeJSONResponse(w, http.StatusBadRequest, ErrorResponse{"Invalid user ID"})
+		return
+	}
+
+	followerUint, err := strconv.ParseUint(followerID, 10, 64)
+	if err != nil {
+		writeJSONResponse(w, http.StatusBadRequest, ErrorResponse{"Invalid follower ID"})
+		return
+	}
+
+	err = models.DeleteFollowersById(app.DB, uint(id), uint(followerUint))
+	if err != nil {
+		writeJSONResponse(w, http.StatusInternalServerError, ErrorResponse{err.Error()})
+		return
+	}
+
+	writeJSONResponse(w, http.StatusOK, map[string]string{"message": "Follower deleted successfully"})
+}
+
+func (app *App) getUsersPosts(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	userID := vars["id"]
+
+	id, err := strconv.ParseUint(userID, 10, 64)
+	if err != nil {
+		writeJSONResponse(w, http.StatusBadRequest, ErrorResponse{"Invalid user ID"})
+		return
+	}
+
+	posts, err := models.GetUsersPosts(app.DB, uint(id))
+	if err != nil {
+		writeJSONResponse(w, http.StatusInternalServerError, ErrorResponse{err.Error()})
+		return
+	}
+
+	writeJSONResponse(w, http.StatusOK, posts)
+}
+
+func (app *App) addSubscriberById(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	profileID, err := strconv.ParseUint(vars["id"], 10, 64)
+	if err != nil {
+		writeJSONResponse(w, http.StatusBadRequest, ErrorResponse{"Invalid profile ID"})
+		return
+	}
+
+	var subscriberID models.ProfileSubscriberRequest
+	if err := json.NewDecoder(r.Body).Decode(&subscriberID); err != nil {
+		writeJSONResponse(w, http.StatusBadRequest, ErrorResponse{err.Error()})
+		return
+	}
+
+	if err := models.AddSubscriberById(app.DB, uint(profileID), uint(subscriberID.SubscriberID)); err != nil {
+		writeJSONResponse(w, http.StatusInternalServerError, ErrorResponse{err.Error()})
+		return
+	}
+
+	writeJSONResponse(w, http.StatusCreated, map[string]string{"message": "Subscriber added successfully"})
+}
