@@ -39,16 +39,20 @@ func main() {
 	r.HandleFunc("/deletePost/{id}", app.deletePostById).Methods("DELETE")
 	r.HandleFunc("/getAllPosts", app.getAllPosts).Methods("GET")
 
-	r.HandleFunc("/addProfile", app.AddProfile).Methods("POST")
+	r.HandleFunc("/addProfile", app.addProfile).Methods("POST")
 	r.HandleFunc("/getProfile/{id}", app.getProfileById).Methods("GET")
 	r.HandleFunc("/updateProfile/{id}", app.updateProfileById).Methods("PUT")
 	r.HandleFunc("/deleteProfile/{id}", app.deleteProfileById).Methods("DELETE")
 
-	r.HandleFunc("/getSubscriber/{id}", app.getSubscriberById).Methods("GET")
-	r.HandleFunc("/getFollowers/{id}", app.getFollowersById).Methods("GET")
-	r.HandleFunc("/deleteFollowers/{id}/{follower_id}", app.deleteFollowersById).Methods("DELETE")
-	r.HandleFunc("/getUserposts/{id}", app.getUsersPosts).Methods("GET")
-	r.HandleFunc("/addSubscribers/{id}", app.addSubscriberById).Methods("POST")
+	// r.HandleFunc("/getProfile/{id}", app.getProfileById).Methods("GET")
+	// r.HandleFunc("/updateProfile/{id}", app.updateProfileById).Methods("PUT")
+	// r.HandleFunc("/deleteProfile/{id}", app.deleteProfileById).Methods("DELETE")
+
+	// r.HandleFunc("/getSubscriber/{id}", app.getSubscriberById).Methods("GET")
+	// r.HandleFunc("/getFollowers/{id}", app.getFollowersById).Methods("GET")
+	// r.HandleFunc("/deleteFollowers/{id}/{follower_id}", app.deleteFollowersById).Methods("DELETE")
+	// r.HandleFunc("/getUserposts/{id}", app.getUsersPosts).Methods("GET")
+	// r.HandleFunc("/addSubscribers/{id}", app.addSubscriberById).Methods("POST")
 
 	fmt.Println("Server listening on port 8080")
 
