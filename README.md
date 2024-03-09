@@ -6,6 +6,12 @@ NGE is a platform designed for budding entrepreneurs to connect, share ideas, an
 
 ![Alt text](image.png)
 
+## Team
+
+- **Zhumabay Dauren** - (22B031105)
+- **Kenesbek Baisal** - (22B030377)
+- **Ахметжан Газиза** - (22B030314)
+
 ## API Endpoints
 
 ### Health Check
@@ -92,9 +98,3 @@ Ref: profile_user_map.profileId > profiles.id
 Ref: followers_users_map.userId > users.id
 Ref: followers_users_map.followerId > users.id
 Ref: messenger > users.id
-
-## Team
-
-- **Zhumabay Dauren** (22B031105)
-- **Kenesbek Baisal** (22B030377)
-- **Ахметжан Газиза** (22B030314)
