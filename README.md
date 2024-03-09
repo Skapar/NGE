@@ -12,12 +12,12 @@ NGE is a platform designed for budding entrepreneurs to connect, share ideas, an
 
 - `GET /health` - Checks the health of the API.
 
-### Events
+### Users
 
-- `POST /events` - Creates a new event.
-- `GET /events/{id}` - Retrieves an event by ID.
-- `DELETE /events/{id}` - Deletes an event by ID.
-- `PUT /events/{id}` - Updates an event by ID.
+- `POST /user` - Creates a new user.
+- `GET /user/{id}` - Retrieves a user by ID.
+- `PUT /user/{id}` - Updates a user by ID.
+- `DELETE /user/{id}` - Deletes a user by ID.
 
 ### Posts
 
@@ -26,12 +26,12 @@ NGE is a platform designed for budding entrepreneurs to connect, share ideas, an
 - `PUT /updatePost/{id}` - Updates a post by ID.
 - `DELETE /deletePost/{id}` - Deletes a post by ID.
 
-### Users
+### Events
 
-- `POST /user` - Creates a new user.
-- `GET /user/{id}` - Retrieves a user by ID.
-- `PUT /user/{id}` - Updates a user by ID.
-- `DELETE /user/{id}` - Deletes a user by ID.
+- `POST /events` - Creates a new event.
+- `GET /events/{id}` - Retrieves an event by ID.
+- `DELETE /events/{id}` - Deletes an event by ID.
+- `PUT /events/{id}` - Updates an event by ID.
 
 ## Database Structure
 
@@ -92,3 +92,9 @@ Ref: profile_user_map.profileId > profiles.id
 Ref: followers_users_map.userId > users.id
 Ref: followers_users_map.followerId > users.id
 Ref: messenger > users.id
+
+## Team
+
+22B031105 Zhumabay Dauren.
+22B030377 Kenesbek Baisal.
+22B030314 Ахметжан Газиза.
