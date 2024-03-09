@@ -95,6 +95,6 @@ Ref: messenger > users.id
 
 ## Team
 
-22B031105 Zhumabay Dauren.
-22B030377 Kenesbek Baisal.
-22B030314 Ахметжан Газиза.
+- **Zhumabay Dauren** (22B031105)
+- **Kenesbek Baisal** (22B030377)
+- **Ахметжан Газиза** (22B030314)
