@@ -6,7 +6,7 @@ import (
 
 type Post struct {
 	gorm.Model
-	Id   uint   `json:"id" gorm:"unique;primaryKey;autoIncrement"`
+	// Id   uint   `json:"id" gorm:"unique;primaryKey;autoIncrement"`
 	Text string `json:"text" gorm:"unique"`
 }
 

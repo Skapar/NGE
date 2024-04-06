@@ -31,9 +31,9 @@ func Connect() (*gorm.DB, error) {
 
 func Migrate() {
 	initializers.DB.AutoMigrate(
-		// &models.Event{},
-		// &models.User{},
-		// &models.Post{},
+		&models.Event{},
+		&models.User{},
+		&models.Post{},
 		&models.Profile{},
 	)
 	fmt.Println("? Migration complete")
