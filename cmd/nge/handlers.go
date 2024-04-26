@@ -289,3 +289,39 @@ func (app *App) deleteProfileById(w http.ResponseWriter, r *http.Request) {
 
 	writeJSONResponse(w, http.StatusOK, map[string]string{"message": "Profile deleted successfully"})
 }
+
+// _________________________________________________________
+
+// FILTER HANDLER
+
+func (app *App) FilterPosts(w http.ResponseWriter, r *http.Request) {
+	var filters models.FilterParams
+	if err := json.NewDecoder(r.Body).Decode(&filters); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Pagination
+	page, err := strconv.Atoi(r.URL.Query().Get("page"))
+	if err != nil {
+		page = 1 // Default to page 1 if not provided or invalid
+	}
+	pageSize, err := strconv.Atoi(r.URL.Query().Get("page_size"))
+	if err != nil {
+		pageSize = 10 // Default page size if not provided or invalid
+	}
+	filters.Page = page
+	filters.PageSize = pageSize
+
+	// Sorting
+	sortBy := r.URL.Query().Get("sort_by")
+	filters.SortBy = sortBy
+
+	posts, err := models.FilterPosts(app.DB, filters)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(posts)
+}

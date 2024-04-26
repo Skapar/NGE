@@ -6,7 +6,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// Event struct represents an event with a date and description
 type Event struct {
 	gorm.Model
 	Date        time.Time `json:"date"`

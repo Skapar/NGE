@@ -38,6 +38,7 @@ func main() {
 	r.HandleFunc("/updatePost/{id}", app.updatePostById).Methods("PUT")
 	r.HandleFunc("/deletePost/{id}", app.deletePostById).Methods("DELETE")
 	r.HandleFunc("/getAllPosts", app.getAllPosts).Methods("GET")
+	r.HandleFunc("/post/filter", app.FilterPosts).Methods("POST")
 
 	r.HandleFunc("/addProfile", app.addProfile).Methods("POST")
 	r.HandleFunc("/getProfile/{id}", app.getProfileById).Methods("GET")
