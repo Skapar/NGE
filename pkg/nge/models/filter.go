@@ -1,9 +1,12 @@
 package models
 
 import (
+	"fmt"
 	"math"
 	"strings"
-	//"github.com/Skapar/NGE/pkg/validator"
+
+	"github.com/Skapar/NGE/pkg/nge/validator"
+	"gorm.io/gorm"
 )
 
 type Filters struct {
@@ -41,7 +44,6 @@ func ValidateFilters(v *validator.Validator, f Filters) {
 	v.Check(f.PageSize > 0, "page_size", "must be greater than 0")
 	v.Check(f.PageSize <= 100, "page_size", "must be a maximum of 100")
 
-	// Check that the sort parameter matches a value in the safelist.
 	v.Check(validator.In(f.Sort, f.SortSafeList...), "sort", "invalid sort value")
 }
 
@@ -51,7 +53,6 @@ func (f Filters) sortColumn() string {
 			return strings.TrimPrefix(f.Sort, "-")
 		}
 	}
-
 	panic("unsafe sort parameter:" + f.Sort)
 }
 
@@ -62,10 +63,21 @@ func (f Filters) sortDirection() string {
 	return "ASC"
 }
 
-func (f Filters) limit() int {
-	return f.PageSize
+func limit(filters Filters) int {
+	return filters.PageSize
 }
 
-func (f Filters) offset() int {
-	return (f.Page - 1) * f.PageSize
+func offset(filters Filters) int {
+	return (filters.Page - 1) * filters.PageSize
+}
+
+func FetchPosts(db *gorm.DB, limit, offset int, sortColumn, sortDirection string) ([]Post, error) {
+	var posts []Post
+	query := fmt.Sprintf("SELECT * FROM posts ORDER BY %s %s LIMIT %d OFFSET %d", sortColumn, sortDirection, limit, offset)
+
+	if err := db.Raw(query).Scan(&posts).Error; err != nil {
+		return nil, err
+	}
+
+	return posts, nil
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/Skapar/NGE/pkg/nge/models"
+	"github.com/Skapar/NGE/pkg/nge/validator"
 )
 
 type HealthCheckResponse struct {
@@ -214,9 +215,7 @@ func (app *App) getAllPosts(w http.ResponseWriter, r *http.Request) {
 
 // _____________________________________________________________
 
-
-
-// User's handler 
+// User's handler
 
 func (app *App) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	var newUser models.User
@@ -292,5 +291,43 @@ func (app *App) GetUserHandler(w http.ResponseWriter, r *http.Request) {
 	writeJSONResponse(w, http.StatusOK, user)
 }
 
-
 // _____________________________________________________________
+// FILTER'S HANDLER
+func (app *App) FilterHandler(w http.ResponseWriter, r *http.Request) {
+	page := parseIntQueryParam(r, "page", 1)
+	pageSize := parseIntQueryParam(r, "page_size", 10)
+	sort := r.URL.Query().Get("sort")
+
+	filters := models.Filters{
+		Page:         page,
+		PageSize:     pageSize,
+		Sort:         sort,
+		SortSafeList: []string{"created_at", "-created_at"},
+	}
+
+	validator := &validator.Validator{}
+	models.ValidateFilters(validator, filters)
+
+	limit := models.Limit(filters)
+	offset := models.Offset(filters)
+	sortColumn := filters.SortColumn()
+	sortDirection := filters.SortDirection()
+	posts, err := models.FetchPosts(app.DB, limit, offset, sortColumn, sortDirection)
+	if err != nil {
+		http.Error(w, "Failed to fetch posts", http.StatusInternalServerError)
+		return
+	}
+
+	writeJSONResponse(w, http.StatusOK, posts)
+}
+func parseIntQueryParam(r *http.Request, param string, defaultValue int) int {
+	value := r.URL.Query().Get(param)
+	if value == "" {
+		return defaultValue
+	}
+	parsedValue, err := strconv.Atoi(value)
+	if err != nil || parsedValue <= 0 {
+		return defaultValue
+	}
+	return parsedValue
+}
