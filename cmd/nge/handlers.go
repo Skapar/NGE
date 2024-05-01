@@ -177,7 +177,7 @@ func (app *App) deletePostById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = models.DeletePost(app.DB, uint(postID)) // pass app.DB to the function
+	err = models.DeletePost(app.DB, uint(postID))
 	if err != nil {
 		writeJSONResponse(w, http.StatusInternalServerError, ErrorResponse{err.Error()})
 		return
@@ -293,7 +293,19 @@ func (app *App) GetUserHandler(w http.ResponseWriter, r *http.Request) {
 
 // _____________________________________________________________
 // FILTER'S HANDLER
-func (app *App) FilterHandler(w http.ResponseWriter, r *http.Request) {
+func parseIntQueryParam(r *http.Request, param string, defaultValue int) int {
+	value := r.URL.Query().Get(param)
+	if value == "" {
+		return defaultValue
+	}
+	parsedValue, err := strconv.Atoi(value)
+	if err != nil || parsedValue <= 0 {
+		return defaultValue
+	}
+	return parsedValue
+}
+
+func (app *App) filterPosts(w http.ResponseWriter, r *http.Request) {
 	page := parseIntQueryParam(r, "page", 1)
 	pageSize := parseIntQueryParam(r, "page_size", 10)
 	sort := r.URL.Query().Get("sort")
@@ -310,24 +322,15 @@ func (app *App) FilterHandler(w http.ResponseWriter, r *http.Request) {
 
 	limit := models.Limit(filters)
 	offset := models.Offset(filters)
+
 	sortColumn := filters.SortColumn()
 	sortDirection := filters.SortDirection()
+
 	posts, err := models.FetchPosts(app.DB, limit, offset, sortColumn, sortDirection)
 	if err != nil {
-		http.Error(w, "Failed to fetch posts", http.StatusInternalServerError)
+		writeJSONResponse(w, http.StatusInternalServerError, ErrorResponse{err.Error()})
 		return
 	}
 
 	writeJSONResponse(w, http.StatusOK, posts)
-}
-func parseIntQueryParam(r *http.Request, param string, defaultValue int) int {
-	value := r.URL.Query().Get(param)
-	if value == "" {
-		return defaultValue
-	}
-	parsedValue, err := strconv.Atoi(value)
-	if err != nil || parsedValue <= 0 {
-		return defaultValue
-	}
-	return parsedValue
 }

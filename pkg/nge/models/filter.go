@@ -10,9 +10,9 @@ import (
 )
 
 type Filters struct {
-	Page         int
-	PageSize     int
-	Sort         string
+	Page         int    `json:"page"`
+	PageSize     int    `json:"page_size"`
+	Sort         string `json:"sort"`
 	SortSafeList []string
 }
 
@@ -47,7 +47,7 @@ func ValidateFilters(v *validator.Validator, f Filters) {
 	v.Check(validator.In(f.Sort, f.SortSafeList...), "sort", "invalid sort value")
 }
 
-func (f Filters) sortColumn() string {
+func (f Filters) SortColumn() string {
 	for _, safeValue := range f.SortSafeList {
 		if f.Sort == safeValue {
 			return strings.TrimPrefix(f.Sort, "-")
@@ -56,18 +56,18 @@ func (f Filters) sortColumn() string {
 	panic("unsafe sort parameter:" + f.Sort)
 }
 
-func (f Filters) sortDirection() string {
+func (f Filters) SortDirection() string {
 	if strings.HasPrefix(f.Sort, "-") {
 		return "DESC"
 	}
 	return "ASC"
 }
 
-func limit(filters Filters) int {
+func Limit(filters Filters) int {
 	return filters.PageSize
 }
 
-func offset(filters Filters) int {
+func Offset(filters Filters) int {
 	return (filters.Page - 1) * filters.PageSize
 }
 
