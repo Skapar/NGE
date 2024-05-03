@@ -39,6 +39,9 @@ func main() {
 	r.HandleFunc("/deletePost/{id}", app.deletePostById).Methods("DELETE")
 	r.HandleFunc("/getAllPosts", app.getAllPosts).Methods("GET")
 
+	r.HandleFunc("/signup", app.Signup).Methods("POST")
+	r.HandleFunc("/signin", app.Signin).Methods("POST")
+
 	fmt.Println("Server listening on port 8080")
 
 	log.Fatal(http.ListenAndServe(":8080", r))

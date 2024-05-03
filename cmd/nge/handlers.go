@@ -2,13 +2,16 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 	"time"
 
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 
 	NGE "github.com/Skapar/NGE/pkg/nge"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
 
 	"github.com/Skapar/NGE/pkg/nge/models"
@@ -214,9 +217,7 @@ func (app *App) getAllPosts(w http.ResponseWriter, r *http.Request) {
 
 // _____________________________________________________________
 
-
-
-// User's handler 
+// User's handler
 
 func (app *App) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	var newUser models.User
@@ -292,5 +293,98 @@ func (app *App) GetUserHandler(w http.ResponseWriter, r *http.Request) {
 	writeJSONResponse(w, http.StatusOK, user)
 }
 
+// AUTH Handler
+// _________________________________________________________
 
-// _____________________________________________________________
+var jwtSecret = []byte("your-secret-key")
+
+func (app *App) Signup(w http.ResponseWriter, r *http.Request) {
+	var user models.User
+	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"message": "Invalid request payload"})
+		return
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.PasswordHash), bcrypt.DefaultCost)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"message": "Error hashing password"})
+		return
+	}
+	user.PasswordHash = string(hashedPassword)
+
+	newUser, err := models.CreateUser(app.DB, user)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"message": "Error creating user"})
+		return
+	}
+
+	newUser.PasswordHash = ""
+
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"message": "User registered successfully",
+		"user":    newUser,
+	})
+}
+
+func (app *App) Signin(w http.ResponseWriter, r *http.Request) {
+	var loginData models.User
+	if err := json.NewDecoder(r.Body).Decode(&loginData); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"message": "Invalid request payload"})
+		return
+	}
+
+	var user models.User
+	if err := app.DB.Where("username = ?", loginData.Username).First(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			w.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(w).Encode(map[string]string{"message": "User not found"})
+			return
+		}
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"message": "Error querying the database"})
+		return
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(loginData.PasswordHash)); err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]string{"message": "Invalid password"})
+		return
+	}
+
+	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"username": user.Username,
+		"userID":   user.ID,
+		"exp":      time.Now().Add(15 * time.Minute).Unix(),
+	})
+
+	accessTokenString, err := accessToken.SignedString(jwtSecret)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"message": "Error generating JWT token"})
+		return
+	}
+
+	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"userID": user.ID,
+		"exp":    time.Now().Add(24 * time.Hour).Unix(),
+	})
+
+	refreshTokenString, err := refreshToken.SignedString(jwtSecret)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"message": "Error generating refresh token"})
+		return
+	}
+
+	// Send both tokens to the client
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{
+		"accessToken":  accessTokenString,
+		"refreshToken": refreshTokenString,
+	})
+}
