@@ -5,7 +5,6 @@ import (
 	"math"
 	"strings"
 
-	//"github.com/Skapar/NGE/pkg/nge/validator"
 	"gorm.io/gorm"
 )
 
@@ -38,22 +37,36 @@ func calculateMetadata(totalRecords, page, pageSize int) Metadata {
 	}
 }
 
-func ValidateFilters(v *validator.Validator, f Filters) {
-	v.Check(f.Page > 0, "page", "must be greater than 0")
-	v.Check(f.Page <= 10_000_0000, "", "must be a maximum of 10 million")
-	v.Check(f.PageSize > 0, "page_size", "must be greater than 0")
-	v.Check(f.PageSize <= 100, "page_size", "must be a maximum of 100")
+func (f Filters) Validate() error {
+	if f.Page <= 0 {
+		return fmt.Errorf("page must be greater than 0")
+	}
+	if f.Page > 10_000_0000 {
+		return fmt.Errorf("page must be a maximum of 10 million")
+	}
+	if f.PageSize <= 0 {
+		return fmt.Errorf("page_size must be greater than 0")
+	}
+	if f.PageSize > 100 {
+		return fmt.Errorf("page_size must be a maximum of 100")
+	}
+	if !isValidSort(f.Sort, f.SortSafeList) {
+		return fmt.Errorf("invalid sort value")
+	}
+	return nil
+}
 
-	v.Check(validator.In(f.Sort, f.SortSafeList...), "sort", "invalid sort value")
+func isValidSort(sort string, safeList []string) bool {
+	for _, safeValue := range safeList {
+		if sort == safeValue || sort == "-"+safeValue {
+			return true
+		}
+	}
+	return false
 }
 
 func (f Filters) SortColumn() string {
-	for _, safeValue := range f.SortSafeList {
-		if f.Sort == safeValue {
-			return strings.TrimPrefix(f.Sort, "-")
-		}
-	}
-	panic("unsafe sort parameter:" + f.Sort)
+	return strings.TrimPrefix(f.Sort, "-")
 }
 
 func (f Filters) SortDirection() string {

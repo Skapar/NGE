@@ -388,3 +388,39 @@ func (app *App) Signin(w http.ResponseWriter, r *http.Request) {
 		"refreshToken": refreshTokenString,
 	})
 }
+
+// ----------------------------------------------
+// FILTER'S HANDLER
+func (app *App) FilterHandler(db *gorm.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		page := 1
+		pageSize := 10
+		sort := "-created_at"
+
+		filters := models.Filters{
+			Page:         page,
+			PageSize:     pageSize,
+			Sort:         sort,
+			SortSafeList: []string{"created_at", "-created_at"},
+		}
+
+		if err := filters.Validate(); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		limit := models.Limit(filters)
+		offset := models.Offset(filters)
+
+		posts, err := models.FetchPosts(db, limit, offset, filters.SortColumn(), filters.SortDirection())
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		for _, post := range posts {
+			w.Write([]byte(post.Text + "\n"))
+		}
+	}
+}
