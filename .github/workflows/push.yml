@@ -2,8 +2,8 @@ name: Hello
 on: [push] # When pushing to any branch then run this action any
 # Env variable
 env:
-  DOCKER_USER: ${{secrets.DOCKERHUB_USERNAME}}
-  DOCKER_PASSWORD: ${{secrets.DOCKERHUB_TOKEN}}
+  DOCKER_USER: ${{secrets.DOCKER_USERNAME}}
+  DOCKER_PASSWORD: ${{secrets.DOCKER_TOKEN}}
   REPO_NAME: ${{secrets.REPO_NAME}}
 jobs:
   push-image-to-docker-hub:  # job name
