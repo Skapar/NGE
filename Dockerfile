@@ -28,9 +28,9 @@ RUN  update-ca-certificates
 WORKDIR /app
 
 # `boilerplate` should be replaced here as well
-COPY --from=build /src/cmd/web/ .
+COPY --from=build /src/cmd/nge/ .
 
 # Exposes port 8090 because our program listens on that port
-EXPOSE 3000
+EXPOSE 8080
 
 CMD ["./app"]
