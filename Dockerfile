@@ -31,6 +31,6 @@ WORKDIR /app
 COPY --from=build /src/cmd/nge/ .
 
 # Exposes port 8090 because our program listens on that port
-EXPOSE 8080
+EXPOSE 8090
 
 CMD ["./app"]
