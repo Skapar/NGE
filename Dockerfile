@@ -1,5 +1,5 @@
 # Building the binary of the App
-FROM golang:1.21.6 AS build
+FROM golang:1.18 AS build
 
 
 
