@@ -393,22 +393,18 @@ func (app *App) SignInHandler(w http.ResponseWriter, r *http.Request) {
 
 func (app *App) AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
-        // Retrieve the token from the Authorization header
-        // Typically, the Authorization header is in the format "Bearer token"
         authHeader := r.Header.Get("Authorization")
         if authHeader == "" {
             writeJSONResponse(w, http.StatusUnauthorized, ErrorResponse{"No Authorization token provided"})
             return
         }
 
-        // Split the header to separate the prefix from the token value
         parts := strings.Split(authHeader, " ")
         if len(parts) != 2 || parts[0] != "Bearer" {
             writeJSONResponse(w, http.StatusUnauthorized, ErrorResponse{"Authorization header format must be Bearer {token}"})
             return
         }
 
-        // Extract the JWT token from the parts array
         tokenStr := parts[1]
 
         // Validate the token
@@ -417,14 +413,10 @@ func (app *App) AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
             writeJSONResponse(w, http.StatusUnauthorized, ErrorResponse{"Invalid or expired token"})
             return
         }
-
-        // Add the user ID from the token to the context
         ctx := context.WithValue(r.Context(), "userID", claims.UserID)
 
-        // Create a new request with the updated context
         r = r.WithContext(ctx)
 
-        // Call the next handler in the chain with the updated request
         next.ServeHTTP(w, r)
     }
 }
