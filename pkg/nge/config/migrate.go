@@ -5,6 +5,7 @@ import (
 	"log"
 
 	initializers "github.com/Skapar/NGE/pkg/nge/database/initializers"
+	"github.com/Skapar/NGE/pkg/nge/models"
 
 	"gorm.io/gorm"
 )
@@ -16,7 +17,7 @@ func Connect() (*gorm.DB, error) {
 		log.Fatal("? Could not load environment variables", err)
 	}
 
-	initializers.ConnectDB(&config) 
+	initializers.ConnectDB(&config)
 
 	db := initializers.GetDB()
 	if db == nil {
@@ -32,8 +33,9 @@ func Connect() (*gorm.DB, error) {
 func Migrate() {
 	initializers.DB.AutoMigrate(
 		// &models.Event{},
-		// &models.User{},
-		// &models.Post{},
+		&models.User{},
+		&models.Post{},
+		&models.Role{},
 	)
 	fmt.Println("? Migration complete")
 }

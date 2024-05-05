@@ -5,9 +5,8 @@ import (
 )
 
 type Post struct {
-	gorm.Model
-	Id   uint   `json:"id" gorm:"unique;primaryKey;autoIncrement"`
-	Text string `json:"text" gorm:"unique"`
+	Id   uint   `json:"id" gorm:"primaryKey;autoIncrement"`
+	Text string `json:"text"`
 }
 
 func AddPost(db *gorm.DB, post Post) (Post, error) {
