@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -113,4 +114,23 @@ func DeleteUser(db *gorm.DB, id uint) error {
 		return result.Error
 	}
 	return nil
+}
+
+func GetUserRole(db *gorm.DB, userID uint) (uint, error) {
+    var roleID uint
+	fmt.Println("dada")
+	fmt.Println(userID)
+	fmt.Println("dada")
+
+    query := "SELECT role_id FROM users WHERE id = ?"
+    if err := db.Raw(query, userID).Row().Scan(&roleID); err != nil {
+        if err == gorm.ErrRecordNotFound {
+            return 0, errors.New("user not found")
+        }
+        return 0, err
+    }
+
+	fmt.Println("role", roleID)
+
+    return roleID, nil
 }

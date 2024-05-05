@@ -28,6 +28,11 @@ func main() {
 
 	r.HandleFunc("/health", healthCheckHandler)
 
+	r.HandleFunc("/signup", app.SignUpHandler).Methods("POST")
+	r.HandleFunc("/signin", app.SignInHandler).Methods("POST")
+
+	r.HandleFunc("/deleteUser/{id}", app.AuthMiddleware(app.DeleteUserHandler)).Methods("DELETE")
+
 	r.HandleFunc("/role", app.CreateRoleHandler).Methods("POST")
 
 	r.HandleFunc("/events", app.AddEventHandler).Methods("POST")
@@ -35,14 +40,12 @@ func main() {
 	r.HandleFunc("/events/{id}", app.DeleteEventHandler).Methods("DELETE")
 	r.HandleFunc("/events/{id}", app.UpdateEventHandler).Methods("PUT")
 
-	r.HandleFunc("/addPost", app.AuthMiddleware(app.addPost)).Methods("POST")
-	r.HandleFunc("/getPost/{id}", app.getPostById).Methods("GET")
-	r.HandleFunc("/updatePost/{id}", app.updatePostByID).Methods("PUT")
-	r.HandleFunc("/deletePost/{id}", app.deletePostById).Methods("DELETE")
-	r.HandleFunc("/getAllPosts", app.getAllPosts).Methods("GET")
-
-	r.HandleFunc("/signup", app.SignUpHandler).Methods("POST")
-	r.HandleFunc("/signin", app.SignInHandler).Methods("POST")
+	r.HandleFunc("/post", app.addPost).Methods("POST")
+ r.HandleFunc("/post/{id}", app.getPostById).Methods("GET")
+ r.HandleFunc("/post/{id}", app.updatePostById).Methods("PUT")
+ r.HandleFunc("/post/{id}", app.deletePostById).Methods("DELETE")
+ r.HandleFunc("/getAllPosts", app.getAllPosts).Methods("GET")
+ r.HandleFunc("/filter", app.FilterHandler(app.DB)).Methods("GET")
 
 	fmt.Println("Server listening on port 8080")
 

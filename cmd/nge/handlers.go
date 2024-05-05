@@ -48,6 +48,26 @@ func writeJSONResponse(w http.ResponseWriter, code int, payload interface{}) {
 	w.WriteHeader(code)
 	w.Write(response)
 }
+func extractUserIDFromToken(r *http.Request) (uint, error) {
+    authHeader := r.Header.Get("Authorization")
+    if authHeader == "" {
+        return 0, fmt.Errorf("no Authorization token provided")
+    }
+
+    parts := strings.Split(authHeader, " ")
+    if len(parts) != 2 || parts[0] != "Bearer" {
+        return 0, fmt.Errorf("authorization header format must be Bearer {token}")
+    }
+
+    tokenStr := parts[1]
+
+    claims, err := models.ValidateToken(tokenStr)
+    if err != nil {
+        return 0, err
+    }
+
+    return claims.UserID, nil
+}
 
 func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
 	writeJSONResponse(w, http.StatusOK, HealthCheckResponse{"ok", NGE.HealthCheck()})
@@ -133,90 +153,88 @@ func (app *App) GetEventHandler(w http.ResponseWriter, r *http.Request) {
 // POSTS HANDLER
 
 func (app *App) addPost(w http.ResponseWriter, r *http.Request) {
-    var newPost models.Post
-    if err := json.NewDecoder(r.Body).Decode(&newPost); err != nil {
-        // Handle error
-        http.Error(w, err.Error(), http.StatusBadRequest)
-        return
-    }
-
-    userID := r.Context().Value("userID").(uint)
-
-    
-    createdPost, err := models.AddPost(app.DB, newPost)
-    if err != nil {
-        http.Error(w, "Failed to create post", http.StatusInternalServerError)
-        return
-    }
-	fmt.Println(userID)
-
-    // Respond with the created post
-    json.NewEncoder(w).Encode(createdPost)
-}
-
-func (app *App) updatePostByID(w http.ResponseWriter, r *http.Request) {
+	var newPost models.Post
+	if err := json.NewDecoder(r.Body).Decode(&newPost); err != nil {
+	 writeJSONResponse(w, http.StatusBadRequest, ErrorResponse{err.Error()})
+	 return
+	}
+   
+	createdPost, err := models.AddPost(app.DB, newPost)
+	if err != nil {
+	 writeJSONResponse(w, http.StatusInternalServerError, ErrorResponse{err.Error()})
+	 return
+	}
+   
+	writeJSONResponse(w, http.StatusCreated, createdPost)
+   }
+   
+   func (app *App) updatePostById(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	postID, err := strconv.ParseUint(vars["id"], 10, 64)
 	if err != nil {
-		writeJSONResponse(w, http.StatusBadRequest, ErrorResponse{"Invalid post ID"})
-		return
+	 writeJSONResponse(w, http.StatusBadRequest, ErrorResponse{"Invalid post ID"})
+	 return
 	}
-
-	fmt.Println(postID)
-
+   
 	var updatedPost models.Post
 	if err := json.NewDecoder(r.Body).Decode(&updatedPost); err != nil {
-		writeJSONResponse(w, http.StatusBadRequest, ErrorResponse{err.Error()})
-		return
+	 writeJSONResponse(w, http.StatusBadRequest, ErrorResponse{err.Error()})
+	 return
 	}
-
+   
+	updatedPost.ID = uint(postID)
+	updatedPost, err = models.UpdatePost(app.DB, updatedPost)
+	if err != nil {
+	 writeJSONResponse(w, http.StatusInternalServerError, ErrorResponse{err.Error()})
+	 return
+	}
+   
 	writeJSONResponse(w, http.StatusOK, updatedPost)
-}
-
-
-func (app *App) deletePostById(w http.ResponseWriter, r *http.Request) {
+   }
+   
+   func (app *App) deletePostById(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	postID, err := strconv.ParseUint(vars["id"], 10, 64)
 	if err != nil {
-		writeJSONResponse(w, http.StatusBadRequest, ErrorResponse{"Invalid post ID"})
-		return
+	 writeJSONResponse(w, http.StatusBadRequest, ErrorResponse{"Invalid post ID"})
+	 return
 	}
-
+   
 	err = models.DeletePost(app.DB, uint(postID)) // pass app.DB to the function
 	if err != nil {
-		writeJSONResponse(w, http.StatusInternalServerError, ErrorResponse{err.Error()})
-		return
+	 writeJSONResponse(w, http.StatusInternalServerError, ErrorResponse{err.Error()})
+	 return
 	}
-
+   
 	writeJSONResponse(w, http.StatusOK, map[string]string{"message": "Post deleted successfully"})
-}
-
-func (app *App) getPostById(w http.ResponseWriter, r *http.Request) {
+   }
+   
+   func (app *App) getPostById(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	postID, err := strconv.ParseUint(vars["id"], 10, 64)
 	if err != nil {
-		writeJSONResponse(w, http.StatusBadRequest, ErrorResponse{"Invalid post ID"})
-		return
+	 writeJSONResponse(w, http.StatusBadRequest, ErrorResponse{"Invalid post ID"})
+	 return
 	}
-
+   
 	post, err := models.GetPost(app.DB, uint(postID))
 	if err != nil {
-		writeJSONResponse(w, http.StatusInternalServerError, ErrorResponse{err.Error()})
-		return
+	 writeJSONResponse(w, http.StatusInternalServerError, ErrorResponse{err.Error()})
+	 return
 	}
-
+   
 	writeJSONResponse(w, http.StatusOK, post)
-}
-
-func (app *App) getAllPosts(w http.ResponseWriter, r *http.Request) {
+   }
+   
+   func (app *App) getAllPosts(w http.ResponseWriter, r *http.Request) {
 	posts, err := models.GetAllPosts(app.DB)
 	if err != nil {
-		writeJSONResponse(w, http.StatusInternalServerError, ErrorResponse{err.Error()})
-		return
+	 writeJSONResponse(w, http.StatusInternalServerError, ErrorResponse{err.Error()})
+	 return
 	}
-
+   
 	writeJSONResponse(w, http.StatusOK, posts)
-}
+   }
 
 // _____________________________________________________________
 // Role
@@ -264,21 +282,41 @@ func (app *App) UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *App) DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	userID, err := strconv.ParseUint(vars["id"], 10, 64)
-	if err != nil {
-		writeJSONResponse(w, http.StatusBadRequest, ErrorResponse{"Invalid user ID"})
-		return
-	}
+    userID, err := extractUserIDFromToken(r)
+	// fmt.Println(userID)
+    if err != nil {
+        writeJSONResponse(w, http.StatusUnauthorized, ErrorResponse{"Invalid or missing token"})
+        return
+    }
 
-	err = models.DeleteUser(app.DB, uint(userID))
-	if err != nil {
-		writeJSONResponse(w, http.StatusInternalServerError, ErrorResponse{err.Error()})
-		return
-	}
+    role, err := models.GetUserRole(app.DB, userID)
+    if err != nil {
+        writeJSONResponse(w, http.StatusInternalServerError, ErrorResponse{err.Error()})
+        return
+    }
+	fmt.Println(role)
+    if role != 1 {
+        writeJSONResponse(w, http.StatusForbidden, ErrorResponse{"Insufficient permissions"})
+        return
+    }
 
-	writeJSONResponse(w, http.StatusOK, map[string]string{"message": "User deleted successfully"})
+    vars := mux.Vars(r)
+    userIDToDelete, err := strconv.ParseUint(vars["id"], 10, 64)
+    if err != nil {
+        writeJSONResponse(w, http.StatusBadRequest, ErrorResponse{"Invalid user ID"})
+        return
+    }
+
+    err = models.DeleteUser(app.DB, uint(userIDToDelete))
+    if err != nil {
+        writeJSONResponse(w, http.StatusInternalServerError, ErrorResponse{err.Error()})
+        return
+    }
+
+    writeJSONResponse(w, http.StatusOK, map[string]string{"message": "User deleted successfully"})
 }
+
+
 
 // func (app *App) GetUserHandler(w http.ResponseWriter, r *http.Request) {
 // 	vars := mux.Vars(r)
@@ -390,5 +428,38 @@ func (app *App) AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
         next.ServeHTTP(w, r)
     }
 }
-
 // 
+
+func (app *App) FilterHandler(db *gorm.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		page := 1
+		pageSize := 10
+		sort := "-created_at"
+
+		filters := models.Filters{
+			Page:         page,
+			PageSize:     pageSize,
+			Sort:         sort,
+			SortSafeList: []string{"created_at", "-created_at"},
+		}
+
+		if err := filters.Validate(); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		limit := models.Limit(filters)
+		offset := models.Offset(filters)
+
+		posts, err := models.FetchPosts(db, limit, offset, filters.SortColumn(), filters.SortDirection())
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		for _, post := range posts {
+			w.Write([]byte(post.Text + "\n"))
+		}
+	}
+}
