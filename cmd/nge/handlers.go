@@ -456,11 +456,11 @@ func (app *App) FilterHandler(db *gorm.DB) http.HandlerFunc {
 	}
 }
 
-// Campaigns CRUD
+// Companies CRUD
 // _____________________________________________________
 
-func (app *App) AddCampaignHandler(w http.ResponseWriter, r *http.Request) {
-	var req models.Campaign
+func (app *App) AddCompanyHandler(w http.ResponseWriter, r *http.Request) {
+	var req models.Company
 
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
@@ -469,16 +469,16 @@ func (app *App) AddCampaignHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Assuming you have a DB connection available as app.DB
-	err = models.CreateCampaign(app.DB, req.Name, req.Description, req.StartDate, req.EndDate, req.Owners)
+	err = models.CreateCompany(app.DB, req.Name, req.Description, req.StartDate, req.EndDate, req.Owners)
 	if err != nil {
-		http.Error(w, "Failed to add campaign", http.StatusInternalServerError)
+		http.Error(w, "Failed to add company", http.StatusInternalServerError)
 		return
 	}
 
-	writeJSONResponse(w, http.StatusCreated, map[string]string{"result": "Campaign added successfully"})
+	writeJSONResponse(w, http.StatusCreated, map[string]string{"result": "Company added successfully"})
 }
 
-func (app *App) DeleteCampaignHandler(w http.ResponseWriter, r *http.Request) {
+func (app *App) DeleteCompanyHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
@@ -486,15 +486,15 @@ func (app *App) DeleteCampaignHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := models.DeleteCampaign(app.DB, uint(id)); err != nil {
-		http.Error(w, "Campaign not found", http.StatusNotFound)
+	if err := models.DeleteCompany(app.DB, uint(id)); err != nil {
+		http.Error(w, "Company not found", http.StatusNotFound)
 		return
 	}
 
-	writeJSONResponse(w, http.StatusOK, map[string]string{"result": "Campaign deleted successfully"})
+	writeJSONResponse(w, http.StatusOK, map[string]string{"result": "Company deleted successfully"})
 }
 
-func (app *App) UpdateCampaignHandler(w http.ResponseWriter, r *http.Request) {
+func (app *App) UpdateCompanyHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
@@ -502,21 +502,21 @@ func (app *App) UpdateCampaignHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req models.Campaign // Use the CampaignRequest struct for decoding request body
+	var req models.Company // Use the Company struct for decoding request body
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	if err := models.UpdateCampaign(app.DB, uint(id), req.Name, req.Description, req.StartDate, req.EndDate, req.Owners); err != nil {
-		http.Error(w, "Failed to update campaign", http.StatusInternalServerError)
+	if err := models.UpdateCompany(app.DB, uint(id), req.Name, req.Description, req.StartDate, req.EndDate, req.Owners); err != nil {
+		http.Error(w, "Failed to update company", http.StatusInternalServerError)
 		return
 	}
 
-	writeJSONResponse(w, http.StatusOK, map[string]string{"result": "Campaign updated successfully"})
+	writeJSONResponse(w, http.StatusOK, map[string]string{"result": "Company updated successfully"})
 }
 
-func (app *App) GetCampaignHandler(w http.ResponseWriter, r *http.Request) {
+func (app *App) GetCompanyHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
@@ -524,11 +524,11 @@ func (app *App) GetCampaignHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	campaign, err := models.GetCampaignByID(app.DB, uint(id))
+	company, err := models.GetCompanyByID(app.DB, uint(id))
 	if err != nil {
-		http.Error(w, "Campaign not found", http.StatusNotFound)
+		http.Error(w, "Company not found", http.StatusNotFound)
 		return
 	}
 
-	writeJSONResponse(w, http.StatusOK, campaign)
+	writeJSONResponse(w, http.StatusOK, company)
 }
