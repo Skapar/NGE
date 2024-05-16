@@ -11,6 +11,7 @@ type Config struct {
 	DBName         string `mapstructure:"POSTGRES_DB"`
 	DBPort         string `mapstructure:"POSTGRES_PORT"`
 	ServerPort     string `mapstructure:"PORT"`
+	DBurl          string `mapstructure:"DATABASE_URL"`
 
 	ClientOrigin string `mapstructure:"CLIENT_ORIGIN"`
 }
@@ -30,4 +31,3 @@ func LoadConfig(path string) (config Config, err error) {
 	err = viper.Unmarshal(&config)
 	return
 }
-

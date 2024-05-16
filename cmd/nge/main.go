@@ -46,6 +46,11 @@ func main() {
 	r.HandleFunc("/deletePost/{id}", app.deletePostById).Methods("DELETE")
 	r.HandleFunc("/getAllPosts", app.getAllPosts).Methods("GET")
 
+	r.HandleFunc("/addCampaign", app.AddCampaignHandler).Methods("POST")
+	r.HandleFunc("/getCampaign/{id}", app.GetCampaignHandler).Methods("GET")
+	r.HandleFunc("/updateCampaign/{id}", app.UpdateCampaignHandler).Methods("PUT")
+	r.HandleFunc("/deleteCampaign/{id}", app.DeleteCampaignHandler).Methods("DELETE")
+	//r.HandleFunc("/getAllCampaigns", app.GetAllCampaignsHandler).Methods("GET")
 
 	fmt.Println("Server listening on port 8080")
 

@@ -7,6 +7,9 @@ import (
 	initializers "github.com/Skapar/NGE/pkg/nge/database/initializers"
 	"github.com/Skapar/NGE/pkg/nge/models"
 
+	//"os"
+
+	//"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -29,14 +32,13 @@ func Connect() (*gorm.DB, error) {
 	return db, nil
 }
 
-
 func Migrate() {
 	initializers.DB.AutoMigrate(
-		// &models.Event{},
-		// &models.User{},
+		&models.Event{},
+		&models.User{},
 		&models.Post{},
-		// &models.Role{},
+		&models.Role{},
+		&models.Campaign{},
 	)
 	fmt.Println("? Migration complete")
 }
-
