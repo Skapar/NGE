@@ -38,7 +38,7 @@ func Migrate() {
 		&models.User{},
 		&models.Post{},
 		&models.Role{},
-		&models.Campaign{},
+		&models.Company{},
 	)
 	fmt.Println("? Migration complete")
 }
