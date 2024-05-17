@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -170,26 +171,40 @@ func (app *App) addPost(w http.ResponseWriter, r *http.Request) {
 
 func (app *App) updatePostById(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	postID, err := strconv.ParseUint(vars["id"], 10, 64)
+	postID, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		writeJSONResponse(w, http.StatusBadRequest, ErrorResponse{"Invalid post ID"})
+		http.Error(w, "Invalid post ID", http.StatusBadRequest)
 		return
 	}
 
 	var updatedPost models.Post
 	if err := json.NewDecoder(r.Body).Decode(&updatedPost); err != nil {
-		writeJSONResponse(w, http.StatusBadRequest, ErrorResponse{err.Error()})
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	updatedPost.ID = uint(postID)
-	updatedPost, err = models.UpdatePost(app.DB, updatedPost)
-	if err != nil {
-		writeJSONResponse(w, http.StatusInternalServerError, ErrorResponse{err.Error()})
+	var existingPost models.Post
+	if err := app.DB.First(&existingPost, uint(postID)).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			http.Error(w, "Post not found", http.StatusNotFound)
+		} else {
+			http.Error(w, "Failed to fetch post", http.StatusInternalServerError)
+		}
 		return
 	}
 
-	writeJSONResponse(w, http.StatusOK, updatedPost)
+	existingPost.Text = updatedPost.Text
+
+	if err := app.DB.Save(&existingPost).Error; err != nil {
+		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
+			http.Error(w, "Duplicate post text", http.StatusConflict)
+			return
+		}
+		http.Error(w, "Failed to update post", http.StatusInternalServerError)
+		return
+	}
+
+	writeJSONResponse(w, http.StatusOK, map[string]string{"result": "Post updated successfully"})
 }
 
 func (app *App) deletePostById(w http.ResponseWriter, r *http.Request) {
@@ -295,7 +310,7 @@ func (app *App) DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fmt.Println(role)
-	if role != 1 {
+	if role != 2 {
 		writeJSONResponse(w, http.StatusForbidden, ErrorResponse{"Insufficient permissions"})
 		return
 	}
