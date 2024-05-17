@@ -438,6 +438,7 @@ func (app *App) AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 // ----------------------------------------------
 // FILTER'S HANDLER
 func (app *App) FilterHandler(db *gorm.DB) http.HandlerFunc {
+	fmt.Println(1)
 	return func(w http.ResponseWriter, r *http.Request) {
 		page := 1
 		pageSize := 10
