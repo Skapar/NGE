@@ -465,9 +465,10 @@ func (app *App) FilterHandler(db *gorm.DB) http.HandlerFunc {
 			return
 		}
 
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		for _, post := range posts {
-			w.Write([]byte(post.Text + "\n"))
+		if err := json.NewEncoder(w).Encode(posts); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 	}
 }
